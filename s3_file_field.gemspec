@@ -19,7 +19,6 @@ Gem::Specification.new do |gem|
   gem.license       = 'MIT'
 
   gem.add_dependency 'rails', '>= 3.2'
-  gem.add_dependency 'sass-rails', '>= 3.2.5'
   gem.add_dependency 'jquery-fileupload-rails', '~> 0.4.1'
 
   gem.add_development_dependency 'bundler', '~> 2.0'
