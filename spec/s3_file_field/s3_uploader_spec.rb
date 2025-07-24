@@ -76,6 +76,25 @@ module S3FileField
           expect(v).to_not include("\n")
         end
       end
+
+      it 'should include AWS v4 signature fields' do
+        s3_uploader = S3Uploader.new({region: 'us-east-1'})
+        data = s3_uploader.field_data_options
+        
+        expect(data[:'x-amz-algorithm']).to eq('AWS4-HMAC-SHA256')
+        expect(data[:'x-amz-credential']).to include('key/')
+        expect(data[:'x-amz-credential']).to include('/us-east-1/s3/aws4_request')
+        expect(data[:'x-amz-date']).to match(/\d{8}T\d{6}Z/)
+        expect(data[:'x-amz-signature']).to be_a(String)
+        expect(data[:'x-amz-signature'].length).to eq(64) # SHA256 hex digest length
+      end
+
+      it 'should generate valid credential format' do
+        s3_uploader = S3Uploader.new({region: 'us-west-2'})
+        credential = s3_uploader.field_data_options[:'x-amz-credential']
+        
+        expect(credential).to match(/^key\/\d{8}\/us-west-2\/s3\/aws4_request$/)
+      end
     end
 
     describe "url" do

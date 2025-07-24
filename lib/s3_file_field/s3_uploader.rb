@@ -49,9 +49,11 @@ module S3FileField
         url: url,
         key: key,
         acl: @options[:acl],
-        aws_access_key_id: @options[:access_key_id],
         policy: policy,
-        signature: signature
+        'x-amz-algorithm': 'AWS4-HMAC-SHA256',
+        'x-amz-credential': credential,
+        'x-amz-date': iso_date,
+        'x-amz-signature': signature
       }.merge(@original_options[:data] || {})
     end
 
@@ -87,18 +89,37 @@ module S3FileField
           ["starts-with","$Content-Type",""],
           {bucket: @options[:bucket]},
           {acl: @options[:acl]},
-          {success_action_status: "201"}
+          {success_action_status: "201"},
+          {"x-amz-algorithm": "AWS4-HMAC-SHA256"},
+          {"x-amz-credential": credential},
+          {"x-amz-date": iso_date}
         ] + @options[:conditions]
       }
     end
 
     def signature
-      Base64.encode64(
-        OpenSSL::HMAC.digest(
-          OpenSSL::Digest.new('sha1'),
-          @options[:secret_access_key], policy
-        )
-      ).gsub("\n", '')
+      signing_key = get_signature_key(@options[:secret_access_key], date_stamp, @options[:region], 's3')
+      OpenSSL::HMAC.hexdigest('sha256', signing_key, policy)
+    end
+
+    def credential
+      "#{@options[:access_key_id]}/#{date_stamp}/#{@options[:region]}/s3/aws4_request"
+    end
+
+    def iso_date
+      @iso_date ||= Time.now.utc.strftime('%Y%m%dT%H%M%SZ')
+    end
+
+    def date_stamp
+      @date_stamp ||= Time.now.utc.strftime('%Y%m%d')
+    end
+
+    def get_signature_key(key, date_stamp, region_name, service_name)
+      k_date = OpenSSL::HMAC.digest('sha256', "AWS4#{key}", date_stamp)
+      k_region = OpenSSL::HMAC.digest('sha256', k_date, region_name)
+      k_service = OpenSSL::HMAC.digest('sha256', k_region, service_name)
+      k_signing = OpenSSL::HMAC.digest('sha256', k_service, 'aws4_request')
+      k_signing
     end
   end
 end
