@@ -17,11 +17,12 @@ Gem::Specification.new do |gem|
   gem.require_paths = ["lib"]
   gem.version       = S3FileField::VERSION
   gem.license       = 'MIT'
+  gem.required_ruby_version = '>= 2.7.0'
 
-  gem.add_dependency 'rails', '>= 3.2'
+  gem.add_dependency 'rails', '>= 7.0'
   gem.add_dependency 'jquery-fileupload-rails', '~> 0.4.1'
 
-  gem.add_development_dependency 'bundler', '~> 2.0'
+  gem.add_development_dependency 'bundler', '>= 2.0'
   gem.add_development_dependency 'rake'
   gem.add_development_dependency 'rspec'
   gem.add_development_dependency 'pry'

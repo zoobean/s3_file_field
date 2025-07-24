@@ -28,15 +28,15 @@ module S3FileField
       @options = default_options.merge(extracted_options)
 
       unless @options[:access_key_id]
-        raise Error.new("Please configure access_key_id option.")
+        raise Error, "Please configure access_key_id option."
       end
 
       unless @options[:secret_access_key]
-        raise Error.new("Please configure secret_access_key option.")
+        raise Error, "Please configure secret_access_key option."
       end
 
       if @options[:bucket].nil? && @options[:url].nil?
-        raise Error.new("Please configure bucket name or url.")
+        raise Error, "Please configure bucket name or url."
       end
     end
 
